@@ -1,7 +1,25 @@
 const mediasoup = require('mediasoup-client');
-const socketClient = require('socket.io-client');
-const socketPromise = require('./lib/socket.io-promise').promise;
-const config = require('./config');
+// const socketClient = require('socket.io-client');
+const socketPromise = require('../../lib/socket.io-promise').promise;
+const config = require('../config.js');
+import socketClient  from 'socket.io-client';
+
+declare global {
+  /** Provides access to connected media input devices like cameras and microphones, as well as screen sharing. In essence, it lets you obtain access to any hardware source of media data. */
+  interface MediaDevices extends EventTarget {
+    // ondevicechange: ((this: MediaDevices, ev: Event) => any) | null;
+    // enumerateDevices(): Promise<MediaDeviceInfo[]>;
+    // getSupportedConstraints(): MediaTrackSupportedConstraints;
+    // getUserMedia(constraints?: MediaStreamConstraints): Promise<MediaStream>;
+    // addEventListener<K extends keyof MediaDevicesEventMap>(type: K, listener: (this: MediaDevices, ev: MediaDevicesEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+    // addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+    // removeEventListener<K extends keyof MediaDevicesEventMap>(type: K, listener: (this: MediaDevices, ev: MediaDevicesEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+    // removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    getDisplayMedia(constraints?: MediaStreamConstraints): Promise<MediaStream>;
+  }
+}
+
+
 
 const hostname = window.location.hostname;
 
@@ -123,31 +141,31 @@ async function publish(e) {
         $txtPublish.innerHTML = 'publishing...';
         $fsPublish.disabled = true;
         $fsSubscribe.disabled = true;
-      break;
+        break;
 
       case 'connected':
-        document.querySelector('#local_video').srcObject = stream;
+        (document.querySelector('#local_video') as HTMLVideoElement).srcObject = stream;
         $txtPublish.innerHTML = 'published';
         $fsPublish.disabled = true;
         $fsSubscribe.disabled = false;
-      break;
+        break;
 
       case 'failed':
         transport.close();
         $txtPublish.innerHTML = 'failed';
         $fsPublish.disabled = false;
         $fsSubscribe.disabled = true;
-      break;
+        break;
 
       default: break;
     }
   });
 
-  let stream;
+  let stream: MediaStream;
   try {
     stream = await getUserMedia(transport, isWebcam);
     const track = stream.getVideoTracks()[0];
-    const params = { track };
+    const params = { track, encodings: [], codecOptions: null };
     if ($chkSimulcast.checked) {
       params.encodings = [
         { maxBitrate: 100000 },
@@ -170,16 +188,14 @@ async function getUserMedia(transport, isWebcam) {
     return;
   }
 
-  let stream;
   try {
-    stream = isWebcam ?
-      await navigator.mediaDevices.getUserMedia({ video: true }) :
-      await navigator.mediaDevices.getDisplayMedia({ video: true });
+    return isWebcam
+      ? (navigator.mediaDevices.getUserMedia({ video: true }))
+      : (navigator.mediaDevices.getDisplayMedia({ video: true }));
   } catch (err) {
     console.error('getUserMedia() failed:', err.message);
     throw err;
   }
-  return stream;
 }
 
 async function subscribe() {
@@ -209,7 +225,7 @@ async function subscribe() {
         break;
 
       case 'connected':
-        document.querySelector('#remote_video').srcObject = await stream;
+        (document.querySelector('#remote_video') as HTMLVideoElement).srcObject = await stream;
         await socket.request('resume');
         $txtSubscription.innerHTML = 'subscribed';
         $fsSubscribe.disabled = true;
@@ -250,3 +266,5 @@ async function consume(transport) {
   stream.addTrack(consumer.track);
   return stream;
 }
+
+export {};

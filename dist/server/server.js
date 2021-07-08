@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const config_1 = __importDefault(require("./config"));
+const config_js_1 = __importDefault(require("../config.js"));
 const mediasoup = require('mediasoup');
 const fs = require('fs');
 const https = require('https');
@@ -59,7 +59,7 @@ function runExpressApp() {
 }
 function runWebServer() {
     return __awaiter(this, void 0, void 0, function* () {
-        const { sslKey, sslCrt } = config_1.default;
+        const { sslKey, sslCrt } = config_js_1.default;
         if (!fs.existsSync(sslKey) || !fs.existsSync(sslCrt)) {
             console.error('SSL files are not found. check your config.js file');
             process.exit(0);
@@ -73,9 +73,9 @@ function runWebServer() {
             console.error('starting web server failed:', err.message);
         });
         yield new Promise((resolve) => {
-            const { listenIp, listenPort } = config_1.default;
+            const { listenIp, listenPort } = config_js_1.default;
             webServer.listen(listenPort, listenIp, () => {
-                const listenIps = config_1.default.mediasoup.webRtcTransport.listenIps[0];
+                const listenIps = config_js_1.default.mediasoup.webRtcTransport.listenIps[0];
                 const ip = listenIps.announcedIp || listenIps.ip;
                 console.log('server is running');
                 console.log(`open https://${ip}:${listenPort} in your web browser`);
@@ -156,24 +156,24 @@ function runSocketServer() {
 function runMediasoupWorker() {
     return __awaiter(this, void 0, void 0, function* () {
         worker = yield mediasoup.createWorker({
-            logLevel: config_1.default.mediasoup.worker.logLevel,
-            logTags: config_1.default.mediasoup.worker.logTags,
-            rtcMinPort: config_1.default.mediasoup.worker.rtcMinPort,
-            rtcMaxPort: config_1.default.mediasoup.worker.rtcMaxPort,
+            logLevel: config_js_1.default.mediasoup.worker.logLevel,
+            logTags: config_js_1.default.mediasoup.worker.logTags,
+            rtcMinPort: config_js_1.default.mediasoup.worker.rtcMinPort,
+            rtcMaxPort: config_js_1.default.mediasoup.worker.rtcMaxPort,
         });
         worker.on('died', () => {
             console.error('mediasoup worker died, exiting in 2 seconds... [pid:%d]', worker.pid);
             setTimeout(() => process.exit(1), 2000);
         });
-        const mediaCodecs = config_1.default.mediasoup.router.mediaCodecs;
+        const mediaCodecs = config_js_1.default.mediasoup.router.mediaCodecs;
         mediasoupRouter = yield worker.createRouter({ mediaCodecs });
     });
 }
 function createWebRtcTransport() {
     return __awaiter(this, void 0, void 0, function* () {
-        const { maxIncomingBitrate, initialAvailableOutgoingBitrate } = config_1.default.mediasoup.webRtcTransport;
+        const { maxIncomingBitrate, initialAvailableOutgoingBitrate } = config_js_1.default.mediasoup.webRtcTransport;
         const transport = yield mediasoupRouter.createWebRtcTransport({
-            listenIps: config_1.default.mediasoup.webRtcTransport.listenIps,
+            listenIps: config_js_1.default.mediasoup.webRtcTransport.listenIps,
             enableUdp: true,
             enableTcp: true,
             preferUdp: true,

@@ -1,4 +1,7 @@
 .idea
 node_modules
 package-lock.json
-config.js
+src-server/config.ts
+/certs/*
+/dist/client/app-bundle.js
+/config.js

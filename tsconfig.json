@@ -1,0 +1,32 @@
+{
+  "baseUrl": "./",
+  "files": [
+    "src/server/server.ts",
+    "src/client/client.ts",
+    "src/config.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "lib": [
+    "dom",
+    "esnext",
+    "node"
+  ],
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "esModuleInterop": true,
+    "target": "ES2015",
+    "module": "CommonJS",
+    "lib": [
+      "DOM",
+      "ES2020"
+    ]
+  },
+  "ts-node": {
+  }
+}
